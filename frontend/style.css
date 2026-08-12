@@ -1,0 +1,173 @@
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #1a0a24 0%, #090412 70%);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+/* OBS Browser Source — transparent chrome */
+html.overlay-mode,
+html.overlay-mode body {
+  background: transparent !important;
+}
+
+html.overlay-mode #app {
+  background: transparent;
+}
+
+html.overlay-mode .dev-panel {
+  display: none !important;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#scene-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#ui-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.dev-panel {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 20;
+  width: min(380px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(12, 10, 20, 0.82);
+  border: 1px solid rgba(255, 180, 80, 0.35);
+  color: #f5f0e8;
+  backdrop-filter: blur(8px);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+}
+
+.dev-panel h2 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  color: #ffb14a;
+}
+
+.dev-panel p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.section-label {
+  margin: 10px 0 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.65;
+}
+
+.assign-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.assign-row input {
+  flex: 1;
+  min-width: 0;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff4e0;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.dev-panel button {
+  cursor: pointer;
+  border: 1px solid rgba(255, 177, 74, 0.45);
+  background: rgba(255, 177, 74, 0.12);
+  color: #ffe6c2;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.dev-panel button:hover {
+  background: rgba(255, 177, 74, 0.28);
+}
+
+#btn-reset-camera {
+  width: 100%;
+  margin-top: 4px;
+  background: rgba(90, 160, 255, 0.18);
+  border-color: rgba(90, 160, 255, 0.5);
+  color: #cfe4ff;
+}
+
+.gift-notification-root {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, 90vw);
+  pointer-events: none;
+}
+
+.gift-notification-card {
+  text-align: center;
+  padding: 22px 28px;
+  border-radius: 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 12, 28, 0.88),
+    rgba(40, 18, 40, 0.78)
+  );
+  border: 1px solid rgba(255, 177, 74, 0.45);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.gift-notification-title {
+  font-size: clamp(22px, 4vw, 34px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #ffe6c2;
+}
+
+.gift-notification-subtitle {
+  margin-top: 8px;
+  font-size: clamp(14px, 2.4vw, 18px);
+  color: #ffb14a;
+}
+
+.viewer-counter {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(12, 10, 20, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f5f0e8;
+  font-size: 13px;
+  pointer-events: none;
+}

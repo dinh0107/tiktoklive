@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meme Bar – Dashboard</title>
+    <link rel="stylesheet" href="/control.css" />
+  </head>
+  <body>
+    <main class="control dashboard">
+      <header class="control-header">
+        <div>
+          <p class="eyebrow">TikTok LIVE Meme Bar</p>
+          <h1>Dashboard</h1>
+        </div>
+        <div class="header-links">
+          <a href="/" target="_blank" rel="noreferrer">Scene</a>
+          <a href="/overlay" target="_blank" rel="noreferrer">OBS Overlay</a>
+        </div>
+      </header>
+
+      <section class="metrics" aria-label="Live stats">
+        <article class="metric">
+          <p class="metric-label">Backend</p>
+          <p id="m-backend" class="metric-value">…</p>
+        </article>
+        <article class="metric">
+          <p class="metric-label">TikTok</p>
+          <p id="m-tiktok" class="metric-value">…</p>
+          <p id="m-tiktok-user" class="metric-sub">—</p>
+        </article>
+        <article class="metric">
+          <p class="metric-label">Viewers</p>
+          <p id="m-viewers" class="metric-value">0</p>
+        </article>
+        <article class="metric">
+          <p class="metric-label">Characters</p>
+          <p id="m-chars" class="metric-value">0</p>
+        </article>
+      </section>
+
+      <div class="dash-grid">
+        <section class="card">
+          <h2>Gift feed</h2>
+          <ul id="gift-feed" class="feed"></ul>
+          <p id="gift-empty" class="hint">Chưa có gift — chờ LIVE hoặc bấm test bên dưới.</p>
+        </section>
+
+        <section class="card">
+          <h2>Characters trong bar</h2>
+          <ul id="char-list" class="feed roster"></ul>
+          <p id="char-empty" class="hint">Chưa có character từ backend.</p>
+        </section>
+      </div>
+
+      <section class="card">
+        <h2>Setup TikTok LIVE</h2>
+        <p id="tiktok-detail" class="detail"></p>
+        <label class="field">
+          <span>Username (đang LIVE)</span>
+          <input
+            id="tiktok-username"
+            type="text"
+            placeholder="ten_tiktok"
+            autocomplete="username"
+          />
+        </label>
+        <div class="btn-row">
+          <button type="button" id="btn-connect" class="primary">Connect</button>
+          <button type="button" id="btn-disconnect" class="ghost">Disconnect</button>
+          <button type="button" id="btn-refresh" class="ghost">Refresh</button>
+        </div>
+        <p class="hint">Username không cần @. Lưu trên máy này.</p>
+      </section>
+
+      <section class="card">
+        <h2>OBS + Test</h2>
+        <label class="field">
+          <span>Browser Source URL</span>
+          <div class="copy-row">
+            <input id="obs-url" type="text" readonly />
+            <button type="button" id="btn-copy-obs" class="ghost">Copy</button>
+          </div>
+        </label>
+        <label class="field">
+          <span>Demo viewer</span>
+          <input id="demo-user" type="text" value="demo_fan" />
+        </label>
+        <div class="btn-row">
+          <button type="button" data-gift="Rose" data-repeat="10">🌹 Rose</button>
+          <button type="button" data-gift="Medium Gift">✨ Medium</button>
+          <button type="button" data-gift="Lion">🦁 Lion</button>
+          <button type="button" data-gift="Universe">🌌 Universe</button>
+        </div>
+        <p id="demo-log" class="detail"></p>
+      </section>
+
+      <p id="toast" class="toast" hidden></p>
+    </main>
+    <script type="module" src="/src/control.ts"></script>
+  </body>
+</html>

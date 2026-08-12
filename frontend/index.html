@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OPEN AIR DJ – Meme Bar</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene-canvas"></canvas>
+      <div id="ui-root"></div>
+      <div id="dev-panel" class="dev-panel">
+        <h2>MEME BAR – Dev Panel</h2>
+        <p><a href="/dashboard" style="color:#ffb14a">Open Dashboard →</a></p>
+        <p id="tiktok-status">TikTok: ⚪ disconnected</p>
+        <p id="dev-stats">Characters: 0 · Queue: 0</p>
+        <p id="last-gift">Last Gift: —</p>
+
+        <div class="section-label">Assign / TikTok</div>
+        <div class="assign-row">
+          <input id="assign-username" type="text" placeholder="@username" value="@duong" />
+          <button type="button" id="btn-assign">JOIN</button>
+        </div>
+        <div class="btn-row">
+          <button type="button" id="btn-assign-dup">RE-ASSIGN SAME</button>
+          <button type="button" id="btn-lookup">LOOKUP</button>
+          <button type="button" id="btn-tiktok-connect">TIKTOK CONNECT</button>
+        </div>
+
+        <div class="section-label">Fake gifts via backend → Socket → GiftQueue</div>
+        <div class="btn-row">
+          <button type="button" data-gift="Rose" data-repeat="10">🌹 Rose x10</button>
+          <button type="button" data-gift="Medium Gift">✨ Medium</button>
+          <button type="button" data-gift="Lion">🦁 Lion</button>
+          <button type="button" data-gift="Universe">🌌 Universe</button>
+        </div>
+        <div class="btn-row">
+          <button type="button" id="btn-burst-queue">QUEUE 5 GIFTS</button>
+        </div>
+
+        <button type="button" id="btn-reset-camera">RESET CAMERA</button>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
