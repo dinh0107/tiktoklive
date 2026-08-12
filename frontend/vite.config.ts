@@ -7,6 +7,7 @@ function appRoutes(): Plugin {
     { match: /^\/overlay\/?(\?.*)?$/, target: "/index.html" },
     { match: /^\/control\/?(\?.*)?$/, target: "/control.html" },
     { match: /^\/dashboard\/?(\?.*)?$/, target: "/control.html" },
+    { match: /^\/music\/?(\?.*)?$/, target: "/music.html" },
   ];
 
   const middleware = (
@@ -49,6 +50,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, "index.html"),
         control: resolve(__dirname, "control.html"),
+        music: resolve(__dirname, "music.html"),
       },
     },
   },

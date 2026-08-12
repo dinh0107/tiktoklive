@@ -54,10 +54,13 @@ export class Character {
     this.sprite.position.y = 1.15;
     this.visual.add(this.sprite);
 
+    // Nametag on root (not visual) so dance squash/sway doesn't hide it
     if (opts?.showNameTag !== false) {
       this.nameSprite = createNameSprite(data.username, this.accent, false);
-      this.nameSprite.position.set(0, 2.45, 0.02);
-      this.visual.add(this.nameSprite);
+      const yLift = 2.55 + (this.seed % 5) * 0.08;
+      this.nameSprite.position.set(0, yLift, 0.05);
+      this.nameSprite.renderOrder = 20;
+      this.root.add(this.nameSprite);
     } else {
       this.nameSprite = null;
     }
@@ -127,10 +130,10 @@ export class Character {
       gsap.killTweensOf(this.nameSprite.scale);
       gsap.fromTo(
         this.nameSprite.scale,
-        { x: 1.65, y: 0.4 },
+        { x: 1.9, y: 0.48 },
         {
-          x: 2.15,
-          y: 0.52,
+          x: 2.3,
+          y: 0.58,
           duration: 0.35,
           yoyo: true,
           repeat: 5,
@@ -190,9 +193,10 @@ export class Character {
         map?.dispose();
         const fresh = createNameSprite(this.data.username, this.accent, true);
         fresh.position.copy(this.nameSprite.position);
-        this.visual.remove(this.nameSprite);
+        fresh.renderOrder = 20;
+        this.root.remove(this.nameSprite);
         this.nameSprite = fresh;
-        this.visual.add(fresh);
+        this.root.add(fresh);
       }
       return;
     }
@@ -201,8 +205,10 @@ export class Character {
       this.accent,
       spotlightStyle,
     );
-    this.nameSprite.position.set(0, 2.45, 0.02);
-    this.visual.add(this.nameSprite);
+    const yLift = 2.55 + (this.seed % 5) * 0.08;
+    this.nameSprite.position.set(0, yLift, 0.05);
+    this.nameSprite.renderOrder = 20;
+    this.root.add(this.nameSprite);
   }
 
   private ensureSpotlightRing(): void {
@@ -516,8 +522,10 @@ function createNameSprite(
       map: texture,
       transparent: true,
       depthTest: false,
+      depthWrite: false,
     }),
   );
-  sprite.scale.set(1.65, 0.4, 1);
+  sprite.scale.set(1.9, 0.48, 1);
+  sprite.renderOrder = 20;
   return sprite;
 }

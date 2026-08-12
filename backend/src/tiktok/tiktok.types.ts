@@ -7,6 +7,7 @@ export interface TikTokGiftEvent {
   repeatCount?: number;
   repeatEnd?: boolean;
   eventKey?: string;
+  giftImageUrl?: string;
 }
 
 export interface TikTokChatEvent {

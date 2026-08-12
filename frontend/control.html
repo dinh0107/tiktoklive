@@ -88,11 +88,30 @@
         </label>
         <div class="btn-row">
           <button type="button" data-gift="Rose" data-repeat="10">🌹 Rose</button>
-          <button type="button" data-gift="Medium Gift">✨ Medium</button>
+          <button type="button" data-gift="Medium Gift">🎁 Medium</button>
           <button type="button" data-gift="Lion">🦁 Lion</button>
           <button type="button" data-gift="Universe">🌌 Universe</button>
         </div>
         <p id="demo-log" class="detail"></p>
+      </section>
+
+      <section class="card">
+        <h2>Nhạc YouTube / SoundCloud (OBS)</h2>
+        <p class="hint">
+          Phát trong Browser Source riêng. Stream có tiếng; Monitor Off = không ra loa máy.
+        </p>
+        <label class="field">
+          <span>Music Browser Source URL</span>
+          <div class="copy-row">
+            <input id="music-url" type="text" readonly />
+            <button type="button" id="btn-copy-music" class="ghost">Copy</button>
+          </div>
+        </label>
+        <ol class="hint" style="margin: 8px 0 0; padding-left: 1.2rem">
+          <li>OBS → Browser Source → dán URL trên</li>
+          <li>Advanced Audio → nguồn này → <strong>Monitor Off</strong></li>
+          <li>Mute Desktop Audio nếu bị đôi tiếng</li>
+        </ol>
       </section>
 
       <p id="toast" class="toast" hidden></p>

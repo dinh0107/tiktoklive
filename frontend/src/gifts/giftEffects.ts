@@ -19,7 +19,7 @@ const TIER_PLAN: Record<GiftTier, Omit<GiftEffectPlan, "tier" | "label" | "emoji
     animation: "dance",
     particle: "sparkles",
     particleEncore: "hearts",
-    holdSeconds: 2.9,
+    holdSeconds: 3.0,
     screenShake: false,
     cameraDrama: 1,
   },
@@ -27,7 +27,7 @@ const TIER_PLAN: Record<GiftTier, Omit<GiftEffectPlan, "tier" | "label" | "emoji
     animation: "celebrate",
     particle: "burst",
     particleEncore: "sparkles",
-    holdSeconds: 3.3,
+    holdSeconds: 3.5,
     screenShake: true,
     cameraDrama: 2,
   },
@@ -35,53 +35,87 @@ const TIER_PLAN: Record<GiftTier, Omit<GiftEffectPlan, "tier" | "label" | "emoji
     animation: "celebrate",
     particle: "stars",
     particleEncore: "burst",
-    holdSeconds: 3.8,
+    holdSeconds: 4.2,
     screenShake: true,
     cameraDrama: 2,
   },
 };
 
+/** Demo / alias names when TikTok diamond cost missing. */
 const NAME_TO_TIER: Record<string, GiftTier> = {
   rose: "rose",
   roses: "rose",
+  rosa: "rose",
+  "hoa hồng": "rose",
   "tiny potato": "small",
+  potato: "small",
   gg: "small",
+  "ice cream cone": "small",
   "medium gift": "medium",
   "finger heart": "medium",
+  perfume: "medium",
   lion: "large",
+  "dono's lion": "large",
+  "drama queen": "large",
   "tiktok universe": "universe",
   universe: "universe",
   galaxy: "universe",
 };
 
-export function resolveGiftTier(giftName: string, diamondCount?: number): GiftTier {
-  const key = giftName.trim().toLowerCase();
-  const mapped = NAME_TO_TIER[key];
-  if (mapped) return mapped;
+const NAME_TO_EMOJI: Record<string, string> = {
+  rose: "🌹",
+  roses: "🌹",
+  rosa: "🌹",
+  "hoa hồng": "🌹",
+  "tiny potato": "🥔",
+  potato: "🥔",
+  gg: "👍",
+  "ice cream cone": "🍦",
+  "medium gift": "🎁",
+  "finger heart": "💕",
+  perfume: "🧴",
+  lion: "🦁",
+  "dono's lion": "🦁",
+  "tiktok universe": "🌌",
+  universe: "🌌",
+  galaxy: "🌌",
+  "drama queen": "👑",
+};
 
-  // Fallback by diamonds when name unknown
-  if (diamondCount !== undefined) {
+const TIER_EMOJI: Record<GiftTier, string> = {
+  rose: "🌹",
+  small: "🎁",
+  medium: "🎁",
+  large: "🦁",
+  universe: "🌌",
+};
+
+/**
+ * Tier from TikTok unit diamond cost first (correct for LIVE),
+ * then known gift names (demo buttons / aliases).
+ */
+export function resolveGiftTier(giftName: string, diamondCount?: number): GiftTier {
+  if (diamondCount !== undefined && diamondCount > 0) {
     if (diamondCount >= 1000) return "universe";
     if (diamondCount >= 100) return "large";
     if (diamondCount >= 10) return "medium";
-    if (diamondCount >= 1) return "rose";
+    // 1–9💎 → rose spotlight (drink + hearts)
+    return "rose";
   }
-  return "small";
+
+  const mapped = NAME_TO_TIER[normalizeGiftKey(giftName)];
+  return mapped ?? "small";
+}
+
+export function emojiForGift(giftName: string, tier: GiftTier): string {
+  const key = normalizeGiftKey(giftName);
+  return NAME_TO_EMOJI[key] ?? TIER_EMOJI[tier];
 }
 
 export function planGiftEffect(gift: GiftEvent): GiftEffectPlan {
   const tier = resolveGiftTier(gift.giftName, gift.diamondCount);
   const base = TIER_PLAN[tier];
-  const emoji =
-    tier === "rose"
-      ? "🌹"
-      : tier === "universe"
-        ? "🌌"
-        : tier === "large"
-          ? "🦁"
-          : tier === "medium"
-            ? "✨"
-            : "🎁";
+  const emoji = emojiForGift(gift.giftName, tier);
 
   return {
     tier,
@@ -94,4 +128,8 @@ export function planGiftEffect(gift: GiftEvent): GiftEffectPlan {
 export function formatGiftLabel(gift: GiftEvent, plan: GiftEffectPlan): string {
   const count = gift.repeatCount && gift.repeatCount > 1 ? ` x${gift.repeatCount}` : "";
   return `${plan.emoji} ${plan.label.toUpperCase()}${count}`;
+}
+
+function normalizeGiftKey(giftName: string): string {
+  return giftName.trim().toLowerCase().replace(/\s+/g, " ");
 }

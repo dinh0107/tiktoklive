@@ -8,6 +8,8 @@ export interface GiftEvent {
   repeatEnd?: boolean;
   /** Optional client/server id for dedupe. */
   eventKey?: string;
+  /** TikTok CDN gift icon (preferred over emoji). */
+  giftImageUrl?: string;
 }
 
 export type GiftTier =

@@ -73,8 +73,8 @@ export class CharacterManager {
       state: "idle",
     };
 
-    const showNameTag = this.byUserId.size < 48;
-    const character = new Character(data, { showNameTag });
+    // Always show nametags — crowd readability > tiny perf save
+    const character = new Character(data, { showNameTag: true });
     this.scene.add(character.root);
     this.byUserId.set(data.userId, character);
     this.byUsername.set(normalizeName(data.username), character);
@@ -178,7 +178,7 @@ function fitsAmong(
   pos: CharacterPosition,
   occupied: CharacterPosition[],
 ): boolean {
-  const min = 1.95;
+  const min = 2.55;
   for (const o of occupied) {
     if (Math.hypot(o.x - pos.x, o.z - pos.z) < min) return false;
   }

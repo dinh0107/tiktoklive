@@ -7,6 +7,8 @@ export interface GiftEvent {
   repeatCount?: number;
   repeatEnd?: boolean;
   eventKey?: string;
+  /** TikTok gift icon URL (CDN). */
+  giftImageUrl?: string;
 }
 
 export interface GiftReceivedPayload {

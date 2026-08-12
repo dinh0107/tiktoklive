@@ -57,17 +57,20 @@ export class GiftEffectManager {
     const userTag = `@${gift.username.replace(/^@/, "")}`;
     const diamonds = giftDiamonds(gift);
 
-    // Top donor LED wall behind stage
+    console.log(
+      `[GIFT] tier=${plan.tier} anim=${plan.animation} drama=${plan.cameraDrama} · ${diamonds}💎 total`,
+    );
+
+    // Top donor LED wall behind stage — clears streak / idle once occupied
     const board = this.donors.add(
       gift.userId,
       gift.username,
       diamonds,
       character.data.id,
     );
-    this.deps.bar.showTopDonor(board.top, board.topChanged);
-
     const streak = this.streak.apply(gift);
     this.deps.bar.showStreakBanner(streak.label, streak.count, streak.user);
+    this.deps.bar.showTopDonor(board.top, board.topChanged);
 
     const djRequest =
       plan.tier === "medium" ||
@@ -92,7 +95,15 @@ export class GiftEffectManager {
     });
 
     if (plan.particle !== "none") {
-      const intensity = 1 + Math.min(1.5, ((gift.repeatCount ?? 1) - 1) * 0.1);
+      const intensity =
+        (plan.tier === "universe"
+          ? 2.2
+          : plan.tier === "large"
+            ? 1.7
+            : plan.tier === "medium"
+              ? 1.25
+              : 1) *
+        (1 + Math.min(1.5, ((gift.repeatCount ?? 1) - 1) * 0.08));
       this.deps.particles.spawn(
         plan.particle,
         character.getWorldPosition(this.tmp),
@@ -103,7 +114,7 @@ export class GiftEffectManager {
           this.deps.particles.spawn(
             plan.particleEncore!,
             character.getWorldPosition(this.tmp),
-            { intensity: intensity * 0.85 },
+            { intensity: intensity * 0.9 },
           );
         }, 700);
       }
@@ -120,14 +131,30 @@ export class GiftEffectManager {
       this.deps.bar.lasers.setTheme(theme, plan.holdSeconds + 1.5);
     }
 
-    await Promise.all([
-      character.playAnimation(plan.animation),
-      this.deps.camera.focusCharacter(
-        character,
-        plan.holdSeconds,
-        plan.cameraDrama,
-      ),
-    ]);
+    // Medium+: walk to stage — camera follows stage front (not empty seat)
+    if (djRequest) {
+      await Promise.all([
+        character
+          .visitDj(Math.min(2.2, plan.holdSeconds * 0.55))
+          .then(() => character.playAnimation(plan.animation)),
+        this.deps.camera.focusPoint(
+          0,
+          1.55,
+          -2.8,
+          plan.holdSeconds,
+          plan.cameraDrama,
+        ),
+      ]);
+    } else {
+      await Promise.all([
+        character.playAnimation(plan.animation),
+        this.deps.camera.focusCharacter(
+          character,
+          plan.holdSeconds,
+          plan.cameraDrama,
+        ),
+      ]);
+    }
 
     console.log(`[GIFT] processed ${character.data.id}`);
   }

@@ -72,8 +72,8 @@ function normalize(username: string): string {
 }
 
 function pickCrowdSlot(occupied: CharacterPosition[]): CharacterPosition {
-  const MIN_SEP = 1.95;
-  const AREA = { xMin: -5.4, xMax: 5.4, zMin: -1.7, zMax: 2.6 };
+  const MIN_SEP = 2.55;
+  const AREA = { xMin: -7.2, xMax: 7.2, zMin: -2.0, zMax: 3.4 };
 
   const rand = (): CharacterPosition => ({
     x: AREA.xMin + Math.random() * (AREA.xMax - AREA.xMin),
@@ -86,24 +86,24 @@ function pickCrowdSlot(occupied: CharacterPosition[]): CharacterPosition {
       (o) => Math.hypot(o.x - pos.x, o.z - pos.z) >= MIN_SEP,
     );
 
-  for (let i = 0; i < 80; i++) {
+  for (let i = 0; i < 120; i++) {
     const pos = rand();
     if (ok(pos)) return pos;
   }
 
   const seed = rand();
-  for (let ring = 1; ring <= 12; ring++) {
-    for (let k = 0; k < 8; k++) {
-      const a = (k / 8) * Math.PI * 2 + ring * 0.35;
+  for (let ring = 1; ring <= 16; ring++) {
+    for (let k = 0; k < 10; k++) {
+      const a = (k / 10) * Math.PI * 2 + ring * 0.4;
       const pos: CharacterPosition = {
         x: Math.max(
           AREA.xMin,
-          Math.min(AREA.xMax, seed.x + Math.cos(a) * ring * 0.55),
+          Math.min(AREA.xMax, seed.x + Math.cos(a) * ring * 0.7),
         ),
         y: 0,
         z: Math.max(
           AREA.zMin,
-          Math.min(AREA.zMax, seed.z + Math.sin(a) * ring * 0.55),
+          Math.min(AREA.zMax, seed.z + Math.sin(a) * ring * 0.7),
         ),
       };
       if (ok(pos)) return pos;

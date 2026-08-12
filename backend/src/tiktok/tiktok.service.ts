@@ -10,6 +10,7 @@ import type {
   TikTokUserEvent,
   TikTokViewerUpdateEvent,
 } from "./tiktok.types.js";
+import { extractGiftImageUrl } from "../gifts/giftImage.js";
 
 type GiftCb = (gift: TikTokGiftEvent) => void;
 type ChatCb = (chat: TikTokChatEvent) => void;
@@ -21,6 +22,8 @@ interface LiveEmitter {
   on(event: string, listener: (...args: unknown[]) => void): void;
   connect(roomId?: string): Promise<{ roomId?: string }>;
   disconnect(): Promise<void>;
+  availableGifts?: unknown;
+  fetchAvailableGifts?: () => Promise<unknown>;
 }
 
 /**
@@ -33,6 +36,10 @@ export class TikTokLiveServiceImpl implements TikTokLiveService {
   private connected = false;
   private reconnectTimer: NodeJS.Timeout | null = null;
   private shouldReconnect = false;
+  /** giftId → TikTok CDN icon / cost / name from catalog */
+  private readonly giftImages = new Map<string, string>();
+  private readonly giftDiamonds = new Map<string, number>();
+  private readonly giftNames = new Map<string, string>();
 
   private giftCbs: GiftCb[] = [];
   private chatCbs: ChatCb[] = [];
@@ -49,6 +56,9 @@ export class TikTokLiveServiceImpl implements TikTokLiveService {
     await this.disconnect(false);
     this.username = uniqueId;
     this.shouldReconnect = true;
+    this.giftImages.clear();
+    this.giftDiamonds.clear();
+    this.giftNames.clear();
 
     // ponytail: cast — package d.ts hides .on(); runtime is still EventEmitter
     const connection = new TikTokLiveConnection(uniqueId, {
@@ -66,6 +76,7 @@ export class TikTokLiveServiceImpl implements TikTokLiveService {
       console.log(
         `[TIKTOK] Connected roomId=${String(state.roomId ?? "unknown")}`,
       );
+      await this.refreshGiftCatalog(connection);
     } catch (err) {
       this.connected = false;
       const message = err instanceof Error ? err.message : String(err);
@@ -152,29 +163,56 @@ export class TikTokLiveServiceImpl implements TikTokLiveService {
         const userId = String(data.user?.userId ?? username ?? "");
         if (!username || !userId) return;
 
+        const giftId =
+          data.giftId !== undefined ? String(data.giftId) : undefined;
+        const ext = data.extendedGiftInfo as
+          | { name?: string; giftName?: string; diamond_count?: number; diamondCount?: number }
+          | undefined;
+
         const giftName =
           data.giftDetails?.giftName ??
-          data.extendedGiftInfo?.name ??
-          `Gift ${String(data.giftId ?? "")}`;
+          ext?.name ??
+          ext?.giftName ??
+          (giftId ? this.giftNames.get(giftId) : undefined) ??
+          `Gift ${giftId ?? ""}`;
+
+        const giftImageUrl =
+          extractGiftImageUrl(data) ??
+          (giftId ? this.giftImages.get(giftId) : undefined);
+
+        const diamondCount =
+          asPositiveInt(data.giftDetails?.diamondCount) ??
+          asPositiveInt(ext?.diamond_count) ??
+          asPositiveInt(ext?.diamondCount) ??
+          asPositiveInt(data.diamondCount) ??
+          (giftId ? this.giftDiamonds.get(giftId) : undefined);
+
+        if (giftId && giftImageUrl) this.giftImages.set(giftId, giftImageUrl);
+        if (giftId && diamondCount !== undefined) {
+          this.giftDiamonds.set(giftId, diamondCount);
+        }
+        if (giftId && giftName) this.giftNames.set(giftId, giftName);
 
         const event: TikTokGiftEvent = {
           userId,
           username,
-          giftId: data.giftId !== undefined ? String(data.giftId) : undefined,
+          giftId,
           giftName,
-          diamondCount:
-            data.extendedGiftInfo?.diamond_count ??
-            data.diamondCount ??
-            undefined,
+          giftImageUrl,
+          diamondCount,
           repeatCount: data.repeatCount ?? 1,
           repeatEnd: true,
           eventKey: [
             userId,
-            data.giftId ?? giftName,
+            giftId ?? giftName,
             data.repeatCount ?? 1,
             data.groupId ?? data.msgId ?? Date.now(),
           ].join("|"),
         };
+
+        console.log(
+          `[GIFT RAW] @${username} ${giftName} x${event.repeatCount} · ${diamondCount ?? "?"}💎 · id=${giftId ?? "?"}`,
+        );
 
         for (const cb of this.giftCbs) cb(event);
       } catch (err) {
@@ -244,6 +282,52 @@ export class TikTokLiveServiceImpl implements TikTokLiveService {
       });
     }, 5000);
   }
+
+  private async refreshGiftCatalog(connection: LiveEmitter): Promise<void> {
+    try {
+      let list: unknown = connection.availableGifts;
+      if ((!list || (Array.isArray(list) && list.length === 0)) && connection.fetchAvailableGifts) {
+        list = await connection.fetchAvailableGifts();
+      }
+      const items = normalizeGiftList(list);
+      let n = 0;
+      for (const item of items) {
+        const row = item as {
+          id?: unknown;
+          gift_id?: unknown;
+          name?: unknown;
+          giftName?: unknown;
+          diamond_count?: unknown;
+          diamondCount?: unknown;
+        };
+        const id = String(row.id ?? row.gift_id ?? "");
+        if (!id) continue;
+        const url = extractGiftImageUrl(item);
+        if (url) this.giftImages.set(id, url);
+        const diamonds =
+          asPositiveInt(row.diamond_count) ?? asPositiveInt(row.diamondCount);
+        if (diamonds !== undefined) this.giftDiamonds.set(id, diamonds);
+        const name = String(row.name ?? row.giftName ?? "").trim();
+        if (name) this.giftNames.set(id, name);
+        n++;
+      }
+      console.log(
+        `[TIKTOK] Gift catalog: ${n} (icons=${this.giftImages.size}, costs=${this.giftDiamonds.size})`,
+      );
+    } catch (err) {
+      console.warn("[TIKTOK] gift catalog failed", err);
+    }
+  }
+}
+
+function normalizeGiftList(list: unknown): unknown[] {
+  if (Array.isArray(list)) return list;
+  if (list && typeof list === "object") {
+    const obj = list as Record<string, unknown>;
+    if (Array.isArray(obj.gifts)) return obj.gifts;
+    if (Array.isArray(obj.data)) return obj.data;
+  }
+  return [];
 }
 
 function pickUser(data: WebcastUserLike): TikTokUserEvent | null {
@@ -267,8 +351,23 @@ interface WebcastGift {
   diamondCount?: number;
   groupId?: string | number;
   msgId?: string | number;
-  giftDetails?: { giftName?: string; giftType?: number };
-  extendedGiftInfo?: { name?: string; diamond_count?: number };
+  giftDetails?: {
+    giftName?: string;
+    giftType?: number;
+    diamondCount?: number;
+  };
+  extendedGiftInfo?: {
+    name?: string;
+    giftName?: string;
+    diamond_count?: number;
+    diamondCount?: number;
+  };
+}
+
+function asPositiveInt(value: unknown): number | undefined {
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  return Math.floor(n);
 }
 
 interface WebcastChat {

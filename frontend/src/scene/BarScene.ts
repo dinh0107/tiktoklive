@@ -17,7 +17,6 @@ export class BarScene {
 
   private readonly floorTiles: THREE.Mesh[] = [];
   private readonly neonMats: THREE.MeshStandardMaterial[] = [];
-  private readonly neonSigns: THREE.Sprite[] = [];
   private streakSign: THREE.Sprite | null = null;
   private streakUntil = 0;
   private streakVisible = false;
@@ -33,7 +32,6 @@ export class BarScene {
     this.addHorizonSilhouette();
     this.addDanceFloor();
     this.addFestoon();
-    this.addNeonProps();
     this.sparkles = this.addSparkles();
     this.sparklePositions = this.sparkles.geometry.attributes.position!
       .array as Float32Array;
@@ -60,27 +58,23 @@ export class BarScene {
 
     const beat = time * ((128 / 60) * Math.PI);
     const kick = Math.abs(Math.sin(beat));
+    const hard = kick > 0.8 ? 1 : kick;
 
     for (let i = 0; i < this.floorTiles.length; i++) {
       const mat = this.floorTiles[i]!.material as THREE.MeshStandardMaterial;
-      const local = Math.abs(Math.sin(beat + i * 0.7));
+      const local = Math.abs(Math.sin(beat * 2 + i * 0.9));
       mat.emissiveIntensity =
-        local > 0.55 ? 0.55 + local * 1.4 : 0.08 + kick * 0.2;
+        local > 0.45 ? 1.1 + local * 2.2 : 0.15 + hard * 0.55;
+      mat.emissive.setHSL(((time * 0.15 + i * 0.12) % 1), 0.95, 0.45);
     }
 
     for (let i = 0; i < this.neonMats.length; i++) {
       this.neonMats[i]!.emissiveIntensity =
-        0.7 + Math.sin(beat * 2 + i) * 0.45;
+        1.1 + Math.sin(beat * 2 + i) * 0.85 + hard * 0.6;
     }
 
     if (this.festoonLights[0]) {
-      this.festoonLights[0]!.intensity = 1.6 + kick * 1.8;
-    }
-
-    for (let i = 0; i < this.neonSigns.length; i++) {
-      if (i === 0 && this.streakVisible) continue;
-      const mat = this.neonSigns[i]!.material as THREE.SpriteMaterial;
-      mat.opacity = 0.75 + kick * 0.25;
+      this.festoonLights[0]!.intensity = 2.4 + hard * 4.2;
     }
 
     if (this.streakSign && this.streakVisible) {
@@ -109,18 +103,19 @@ export class BarScene {
   }
 
   showStreakBanner(giftLabel: string, count: number, user: string): void {
+    // Board owns the wall once a top donor is up — don't overlay old streak text
+    if (this.donorScreen.hasDonor()) return;
+
     const line1 = count > 1 ? `${giftLabel} x${count}` : giftLabel;
     const line2 = `@${user.replace(/^@/, "")}`;
     if (!this.streakSign) {
-      this.streakSign = makeStreakSign(line1, line2, 0, 6.2, -7.2, 6.5);
+      this.streakSign = makeStreakSign(line1, line2, 0, 6.8, -6.4, 5.5);
       this.root.add(this.streakSign);
     } else {
       redrawStreakSign(this.streakSign, line1, line2);
     }
     this.streakVisible = true;
     this.streakUntil = performance.now() + 14_000;
-    const meme = this.neonSigns[0];
-    if (meme) (meme.material as THREE.SpriteMaterial).opacity = 0.2;
   }
 
   clearStreakBanner(): void {
@@ -128,11 +123,10 @@ export class BarScene {
     if (this.streakSign) {
       (this.streakSign.material as THREE.SpriteMaterial).opacity = 0;
     }
-    const meme = this.neonSigns[0];
-    if (meme) (meme.material as THREE.SpriteMaterial).opacity = 1;
   }
 
   showTopDonor(donor: DonorScore, flash = true): void {
+    this.clearStreakBanner();
     this.donorScreen.showDonor(donor, flash);
   }
 
@@ -266,13 +260,6 @@ export class BarScene {
       lamp.position.set(i * 1.25, 7.05, -8.0);
       this.root.add(lamp);
     }
-  }
-
-  private addNeonProps(): void {
-    // One clean banner — not stacked ugly text
-    const meme = makeSign("OPEN AIR", 0, 7.6, -8.6, 0xff8a4a, 5.5);
-    this.neonSigns.push(meme);
-    this.root.add(meme);
   }
 
   private addSparkles(): THREE.Points {
@@ -431,43 +418,6 @@ function makeDirtTexture(): THREE.CanvasTexture {
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.needsUpdate = true;
   return tex;
-}
-
-function makeSign(
-  text: string,
-  x: number,
-  y: number,
-  z: number,
-  color: number,
-  scaleX: number,
-): THREE.Sprite {
-  const canvas = document.createElement("canvas");
-  canvas.width = 640;
-  canvas.height = 140;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return new THREE.Sprite(new THREE.SpriteMaterial({ color }));
-  const hex = `#${color.toString(16).padStart(6, "0")}`;
-  ctx.clearRect(0, 0, 640, 140);
-  ctx.shadowColor = hex;
-  ctx.shadowBlur = 28;
-  ctx.fillStyle = hex;
-  ctx.font = "bold 64px Impact, Arial Black, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, 320, 72);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  const s = new THREE.Sprite(
-    new THREE.SpriteMaterial({
-      map: tex,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    }),
-  );
-  s.position.set(x, y, z);
-  s.scale.set(scaleX, scaleX * 0.24, 1);
-  return s;
 }
 
 function makeStreakSign(

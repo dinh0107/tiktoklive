@@ -90,8 +90,11 @@ export async function createApp() {
       res.json({ ok: true, username });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      sockets.setTikTokStatus("error", message);
-      res.status(502).json({ ok: false, error: message });
+      const friendly = /Business plan|eulerstream|sign a request/i.test(message)
+        ? "TikTok sign server cần bản trả phí (Euler). Backend đang dùng connector 2.0.9 miễn phí — restart backend rồi Connect lại. Account phải đang LIVE."
+        : message;
+      sockets.setTikTokStatus("error", friendly);
+      res.status(502).json({ ok: false, error: friendly });
     }
   });
 

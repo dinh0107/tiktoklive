@@ -13,7 +13,8 @@ export class DiscoBall {
 
   constructor() {
     this.root.name = "DiscoBall";
-    this.root.position.set(0, 7.55, 0.15);
+    // Disco hangs above the LED wall (board top ~6.2)
+    this.root.position.set(0, 8.35, 0.15);
 
     this.addMotorAndCord();
     this.spin = new THREE.Group();
@@ -29,12 +30,16 @@ export class DiscoBall {
   }
 
   update(time: number): void {
-    this.spin.rotation.y = time * 0.7;
-    this.spin.rotation.z = Math.sin(time * 0.35) * 0.05;
-    // Cheap pulse only — no per-particle orbit rewrite
-    this.spot.intensity = 2.8 + Math.sin(time * 2.5) * 0.5;
+    const beat = time * ((128 / 60) * Math.PI);
+    const kick = Math.abs(Math.sin(beat));
+    const hard = kick > 0.82 ? 1 : kick;
+
+    this.spin.rotation.y = time * 1.15;
+    this.spin.rotation.z = Math.sin(time * 0.55) * 0.08;
+    this.spot.intensity = 3.5 + hard * 4.5;
+    this.spot.color.setHSL((time * 0.2) % 1, 0.55, 0.75 + hard * 0.15);
     if (this.rayMats[0]) {
-      const o = 0.18 + (Math.sin(time * 3) * 0.5 + 0.5) * 0.2;
+      const o = 0.22 + hard * 0.35 + (Math.sin(time * 4) * 0.5 + 0.5) * 0.15;
       for (let i = 0; i < this.rayMats.length; i++) {
         this.rayMats[i]!.opacity = o;
       }
@@ -176,7 +181,7 @@ export class DiscoBall {
         opacity: 0.16,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
-        depthTest: false,
+        depthTest: true,
         side: THREE.DoubleSide,
       });
       this.rayMats.push(mat);

@@ -41,7 +41,7 @@ export class GiftNotification {
       { autoAlpha: 1, scale: 1, y: 0, duration: 0.35, ease: "back.out(1.6)" },
     );
 
-    this.hideTween = gsap.delayedCall(2.4, () => {
+    this.hideTween = gsap.delayedCall(2.6, () => {
       gsap.to(this.card, {
         autoAlpha: 0,
         scale: 0.92,

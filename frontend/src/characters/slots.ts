@@ -1,14 +1,14 @@
 import type { CharacterPosition } from "./character.types";
 
 /** Sprite ~1.7 wide — keep this gap so bodies don't stack. */
-const MIN_SEP = 1.95;
+const MIN_SEP = 2.55;
 
-/** Open floor in front of stage (stage ~ z=-5.4). */
+/** Wider open floor so demo guests spread out. */
 const AREA = {
-  xMin: -5.4,
-  xMax: 5.4,
-  zMin: -1.7,
-  zMax: 2.6,
+  xMin: -7.2,
+  xMax: 7.2,
+  zMin: -2.0,
+  zMax: 3.4,
 };
 
 /**
@@ -17,19 +17,19 @@ const AREA = {
 export function pickCrowdSlot(
   occupied: CharacterPosition[],
 ): CharacterPosition {
-  for (let i = 0; i < 80; i++) {
+  for (let i = 0; i < 120; i++) {
     const pos = randomInArea();
     if (fits(pos, occupied)) return pos;
   }
   // Fallback: spiral out from a random seed until free
   const seed = randomInArea();
-  for (let ring = 1; ring <= 12; ring++) {
-    for (let k = 0; k < 8; k++) {
-      const a = (k / 8) * Math.PI * 2 + ring * 0.35;
+  for (let ring = 1; ring <= 16; ring++) {
+    for (let k = 0; k < 10; k++) {
+      const a = (k / 10) * Math.PI * 2 + ring * 0.4;
       const pos = {
-        x: clamp(seed.x + Math.cos(a) * ring * 0.55, AREA.xMin, AREA.xMax),
+        x: clamp(seed.x + Math.cos(a) * ring * 0.7, AREA.xMin, AREA.xMax),
         y: 0,
-        z: clamp(seed.z + Math.sin(a) * ring * 0.55, AREA.zMin, AREA.zMax),
+        z: clamp(seed.z + Math.sin(a) * ring * 0.7, AREA.zMin, AREA.zMax),
       };
       if (fits(pos, occupied)) return pos;
     }
@@ -41,12 +41,12 @@ export function pickCrowdSlot(
 export function slotForIndex(index: number): CharacterPosition {
   // Deterministic-ish scatter so old callers still spread out
   const golden = 2.399963;
-  const r = 1.2 + (index % 7) * 0.45;
+  const r = 1.6 + (index % 8) * 0.55;
   const a = index * golden;
   return {
-    x: clamp(Math.cos(a) * r * 2.2, AREA.xMin, AREA.xMax),
+    x: clamp(Math.cos(a) * r * 2.8, AREA.xMin, AREA.xMax),
     y: 0,
-    z: clamp(Math.sin(a) * r * 1.1 + 0.4, AREA.zMin, AREA.zMax),
+    z: clamp(Math.sin(a) * r * 1.35 + 0.5, AREA.zMin, AREA.zMax),
   };
 }
 

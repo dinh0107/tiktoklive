@@ -36,11 +36,13 @@ const el = {
   demoUser: document.querySelector<HTMLInputElement>("#demo-user")!,
   demoLog: document.querySelector<HTMLElement>("#demo-log")!,
   obsUrl: document.querySelector<HTMLInputElement>("#obs-url")!,
+  musicUrl: document.querySelector<HTMLInputElement>("#music-url")!,
   toast: document.querySelector<HTMLElement>("#toast")!,
   connect: document.querySelector<HTMLButtonElement>("#btn-connect")!,
   disconnect: document.querySelector<HTMLButtonElement>("#btn-disconnect")!,
   refresh: document.querySelector<HTMLButtonElement>("#btn-refresh")!,
   copyObs: document.querySelector<HTMLButtonElement>("#btn-copy-obs")!,
+  copyMusic: document.querySelector<HTMLButtonElement>("#btn-copy-music")!,
   giftFeed: document.querySelector<HTMLUListElement>("#gift-feed")!,
   giftEmpty: document.querySelector<HTMLElement>("#gift-empty")!,
   charList: document.querySelector<HTMLUListElement>("#char-list")!,
@@ -50,6 +52,7 @@ const el = {
 el.username.value = localStorage.getItem(LS_USER) ?? "";
 el.demoUser.value = localStorage.getItem(LS_DEMO) ?? "demo_fan";
 el.obsUrl.value = `${window.location.origin}/overlay`;
+el.musicUrl.value = `${window.location.origin}/music`;
 
 el.username.addEventListener("change", () => {
   localStorage.setItem(LS_USER, el.username.value.trim().replace(/^@/, ""));
@@ -62,6 +65,7 @@ el.connect.addEventListener("click", () => void onConnect());
 el.disconnect.addEventListener("click", () => void onDisconnect());
 el.refresh.addEventListener("click", () => void refreshStats());
 el.copyObs.addEventListener("click", () => void copyObs());
+el.copyMusic.addEventListener("click", () => void copyMusic());
 
 document.querySelectorAll<HTMLButtonElement>("[data-gift]").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -263,6 +267,16 @@ async function copyObs(): Promise<void> {
     toast("Đã copy OBS URL");
   } catch {
     el.obsUrl.select();
+    toast("Copy thủ công (Ctrl+C)");
+  }
+}
+
+async function copyMusic(): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(el.musicUrl.value);
+    toast("Đã copy Music URL");
+  } catch {
+    el.musicUrl.select();
     toast("Copy thủ công (Ctrl+C)");
   }
 }
