@@ -1,3 +1,9 @@
+## CI / CD
+
+Xem [`deploy/ci-cd.md`](ci-cd.md) — GitHub Actions build FE và commit `backend/public`.
+
+---
+
 # Deploy qua Git → Plesk (`live.chunmedia.vn`)
 
 Repo: `https://github.com/dinh0107/tiktoklive.git`

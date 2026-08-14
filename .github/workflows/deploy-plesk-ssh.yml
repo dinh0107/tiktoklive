@@ -1,0 +1,38 @@
+name: CD Plesk SSH
+
+# Optional: after artifacts are on main, SSH into Windows/Plesk and pull.
+# Repo → Settings → Secrets:
+#   PLESK_HOST, PLESK_USER, PLESK_SSH_KEY, PLESK_APP_PATH
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["CD"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  plesk:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require secrets
+        env:
+          HOST: ${{ secrets.PLESK_HOST }}
+        run: |
+          if [ -z "$HOST" ]; then
+            echo "Skip: set secrets PLESK_HOST / PLESK_USER / PLESK_SSH_KEY / PLESK_APP_PATH"
+            exit 0
+          fi
+
+      - name: Pull + server build
+        if: ${{ secrets.PLESK_HOST != '' }}
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.PLESK_HOST }}
+          username: ${{ secrets.PLESK_USER }}
+          key: ${{ secrets.PLESK_SSH_KEY }}
+          script: |
+            cd "${{ secrets.PLESK_APP_PATH }}"
+            git pull origin main
+            node deploy/after-pull.mjs --server
