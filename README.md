@@ -55,6 +55,26 @@ FRONTEND_URL=http://localhost:5173
 
 Do not commit `.env`.
 
+## Deploy (Windows + Plesk)
+
+Xem hướng dẫn đầy đủ: [`deploy/plesk-windows.md`](deploy/plesk-windows.md)
+
+Tóm tắt:
+
+```bat
+deploy\build-windows.bat
+```
+
+Upload thư mục `backend` (có `dist` + `public`) lên Plesk Node.js, `.env`:
+
+```
+FRONTEND_URL=https://your-domain.com
+STATIC_DIR=./public
+PORT=3000
+```
+
+Startup file: `dist/index.js`. Overlay: `https://your-domain.com/overlay`
+
 Optional frontend:
 
 ```

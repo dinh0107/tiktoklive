@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { resolve } from "node:path";
 
 function required(name: string, fallback?: string): string {
   const value = process.env[name] ?? fallback;
@@ -8,8 +9,31 @@ function required(name: string, fallback?: string): string {
   return value;
 }
 
+/** Comma-separated origins, or `*` for reflect-request (dev only). */
+function parseOrigins(raw: string): string | string[] | boolean {
+  const v = raw.trim();
+  if (v === "*") return true;
+  if (v.includes(",")) {
+    return v.split(",").map((s) => s.trim()).filter(Boolean);
+  }
+  return v;
+}
+
 export const env = {
   port: Number(process.env.PORT ?? 3000),
   tiktokUsername: (process.env.TIKTOK_USERNAME ?? "").replace(/^@/, ""),
+  /** Public site URL(s) for CORS — e.g. https://meme.example.com */
   frontendUrl: required("FRONTEND_URL", "http://localhost:5173"),
+  corsOrigin: parseOrigins(
+    process.env.CORS_ORIGIN ??
+      process.env.FRONTEND_URL ??
+      "http://localhost:5173",
+  ),
+  /**
+   * Folder of Vite build (frontend/dist). When set, Express serves overlay + dashboard.
+   * Plesk: STATIC_DIR=./public  (copy frontend/dist → backend/public)
+   */
+  staticDir: process.env.STATIC_DIR
+    ? resolve(process.cwd(), process.env.STATIC_DIR)
+    : null,
 };

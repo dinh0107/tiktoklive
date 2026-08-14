@@ -1,6 +1,7 @@
 import cors from "cors";
 import express from "express";
 import { createServer } from "node:http";
+import { join } from "node:path";
 import { Server } from "socket.io";
 import { env } from "./config/env.js";
 import { CharacterService } from "./characters/character.service.js";
@@ -20,7 +21,7 @@ export async function createApp() {
 
   const io = new Server(httpServer, {
     cors: {
-      origin: env.frontendUrl,
+      origin: env.corsOrigin,
       methods: ["GET", "POST"],
     },
   });
@@ -28,7 +29,7 @@ export async function createApp() {
 
   wireTikTok(tiktok, characters, gifts, sockets);
 
-  app.use(cors({ origin: env.frontendUrl }));
+  app.use(cors({ origin: env.corsOrigin }));
   app.use(express.json());
 
   app.get("/api/health", (_req, res) => {
@@ -127,7 +128,31 @@ export async function createApp() {
     });
   });
 
+  // Production: serve Vite build (Plesk single Node app)
+  if (env.staticDir) {
+    mountStatic(app, env.staticDir);
+    console.log(`[SERVER] STATIC_DIR=${env.staticDir}`);
+  }
+
   return { app, httpServer, characters, gifts, sockets, tiktok };
+}
+
+function mountStatic(app: express.Express, staticDir: string): void {
+  const send =
+    (file: string) => (_req: express.Request, res: express.Response) => {
+      res.sendFile(join(staticDir, file));
+    };
+
+  app.get(["/overlay", "/overlay/"], send("index.html"));
+  app.get(
+    ["/control", "/control/", "/dashboard", "/dashboard/"],
+    send("control.html"),
+  );
+  app.get(["/music", "/music/"], send("music.html"));
+
+  app.use(
+    express.static(staticDir, { index: "index.html", fallthrough: true }),
+  );
 }
 
 function wireTikTok(

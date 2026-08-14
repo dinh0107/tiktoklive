@@ -3,8 +3,10 @@ import type { CharacterManager } from "../characters/CharacterManager";
 import type { GiftQueue } from "../gifts/GiftQueue";
 import type { GiftEvent } from "../gifts/gift.types";
 
+/** Dev → localhost:3000. Production (same host on Plesk) → current origin. */
 export const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL ?? "http://localhost:3000";
+  (import.meta.env.VITE_BACKEND_URL as string | undefined)?.trim() ||
+  (import.meta.env.DEV ? "http://localhost:3000" : window.location.origin);
 
 export interface ServerCharacter {
   id: string;

@@ -1,0 +1,8 @@
+{
+  "name": "meme-bar",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy:build": "node deploy/after-pull.mjs"
+  }
+}
