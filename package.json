@@ -2,7 +2,12 @@
   "name": "meme-bar",
   "private": true,
   "type": "module",
+  "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "deploy:build": "node deploy/after-pull.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
   }
 }

@@ -28,6 +28,7 @@ const be = join(root, "backend");
 const dist = join(fe, "dist");
 const pub = join(be, "public");
 
+run(root, ["ci", "--omit=dev"]);
 run(fe, ["ci"]);
 run(fe, ["run", "build"]);
 run(be, ["ci", "--omit=dev"]);

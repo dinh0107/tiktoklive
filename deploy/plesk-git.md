@@ -50,64 +50,29 @@ Domains → **member.chunmedia.vn** → **Node.js**:
 
 | Mục | Giá trị |
 |-----|---------|
-| Application root | thư mục Git clone (chứa `backend/`, `frontend/`, `deploy/`) |
-| Application startup file | `backend/dist/index.js` |
+| Application root | thư mục clone repo (**có `app.js`**) |
+| **Application startup file** | **`app.js`** |
 | Application mode | `production` |
 | Node.js version | **20** |
 
-**Custom environment variables:**
+**Custom environment variables (khuyến nghị):**
 
 ```
 FRONTEND_URL=https://member.chunmedia.vn
-STATIC_DIR=./public
 PORT=3000
 TIKTOK_USERNAME=
 ```
 
-Lưu ý: `STATIC_DIR` tính từ **cwd** khi Node start. Plesk thường chạy với cwd = Application root.
+`STATIC_DIR` — `app.js` tự trỏ `backend/public` nếu không set.
 
-Nếu startup là `backend/dist/index.js` và cwd = repo root:
-
-```
-STATIC_DIR=./backend/public
-```
-
-Nếu Application root = `.../meme-bar/backend` thì:
-
-- Startup: `dist/index.js`
-- `STATIC_DIR=./public`
-- Deploy action phải `cd` lên parent rồi build, hoặc clone chỉ backend (không khuyến nghị)
-
-**Khuyến nghị cấu hình gọn:**
-
-- Git deploy path = `.../meme-bar` (repo root)
-- Application root = `.../meme-bar/backend`
-- Startup = `dist/index.js`
-- Env: `STATIC_DIR=./public` , `FRONTEND_URL=https://member.chunmedia.vn`
-- Deploy actions:
+Deploy actions sau Git Pull:
 
 ```bat
-node ../deploy/after-pull.mjs
+npm ci --omit=dev
+node deploy/after-pull.mjs
 ```
 
-Không được — after-pull expect repo root. Đúng hơn:
-
-```bat
-cd .. && node deploy/after-pull.mjs
-```
-
-(khi Plesk current dir = backend)  
-
-Hoặc set Application root = repo root và:
-
-```
-Startup file = backend/dist/index.js
-STATIC_DIR = ./backend/public
-FRONTEND_URL = https://member.chunmedia.vn
-Deploy actions = node deploy/after-pull.mjs
-```
-
-→ **Cách này đơn giản nhất.**
+(`npm ci` ở root cài `dotenv` cho `app.js`; `after-pull` build FE/BE.)
 
 ## D. Tạo `.env` trên server (một lần, không qua Git)
 

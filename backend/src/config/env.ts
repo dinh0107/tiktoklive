@@ -33,7 +33,10 @@ export const env = {
    * Folder of Vite build (frontend/dist). When set, Express serves overlay + dashboard.
    * Plesk: STATIC_DIR=./public  (copy frontend/dist → backend/public)
    */
-  staticDir: process.env.STATIC_DIR
-    ? resolve(process.cwd(), process.env.STATIC_DIR)
-    : null,
+  staticDir: (() => {
+    const raw = process.env.STATIC_DIR;
+    if (!raw) return null;
+    // Absolute path (from app.js) or relative to cwd
+    return resolve(raw);
+  })(),
 };
