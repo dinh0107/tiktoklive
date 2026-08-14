@@ -23,15 +23,28 @@ function run(cwd, args) {
   }
 }
 
+/** Prefer `npm ci` when lockfile exists; otherwise `npm install`. */
+function npmInstall(cwd, omitDev) {
+  const hasLock =
+    existsSync(join(cwd, "package-lock.json")) ||
+    existsSync(join(cwd, "npm-shrinkwrap.json"));
+  if (hasLock) {
+    run(cwd, omitDev ? ["ci", "--omit=dev"] : ["ci"]);
+  } else {
+    console.warn(`[deploy] no package-lock in ${cwd} — using npm install`);
+    run(cwd, omitDev ? ["install", "--omit=dev"] : ["install"]);
+  }
+}
+
 const fe = join(root, "frontend");
 const be = join(root, "backend");
 const dist = join(fe, "dist");
 const pub = join(be, "public");
 
-run(root, ["ci", "--omit=dev"]);
-run(fe, ["ci"]);
+npmInstall(root, true);
+npmInstall(fe, false);
 run(fe, ["run", "build"]);
-run(be, ["ci", "--omit=dev"]);
+npmInstall(be, true);
 run(be, ["run", "build"]);
 
 if (!existsSync(dist)) {

@@ -25,6 +25,6 @@ if (!existsSync(entry)) {
 process.env.STATIC_DIR =
   process.env.STATIC_DIR || join(root, "backend", "public");
 process.env.FRONTEND_URL =
-  process.env.FRONTEND_URL || "https://member.chunmedia.vn";
+  process.env.FRONTEND_URL || "https://live.chunmedia.vn";
 
 await import(pathToFileURL(entry).href);
