@@ -56,8 +56,7 @@ async function boot(): Promise<void> {
   }
 
   const app = new SceneManager(canvas, { transparent: isOverlay });
-  const seeded = app.characters.seedPlaceholders(8, false);
-  void Promise.all(seeded.map((c) => c.playSpawn()));
+  // Empty floor until viewers type "hey" in chat
   assertCharacterMapping(app.characters);
 
   const notification = new GiftNotification(uiRoot);

@@ -169,23 +169,37 @@ function wireTikTok(
     sockets.emitViewerUpdate(update.count);
   });
 
+  // Join/follow: no character — spawn only when chat trigger ("hey")
   tiktok.onMemberJoin((user) => {
-    const character = characters.assignCharacter(user);
-    sockets.emitViewerJoin(user, character);
+    console.log(`[VIEWER] @${user.username} joined (no spawn)`);
   });
 
   tiktok.onFollow((user) => {
-    const character = characters.assignCharacter(user);
-    sockets.emitCharacterAssign(character);
+    console.log(`[VIEWER] @${user.username} followed (no spawn)`);
   });
 
   tiktok.onChat((chat) => {
-    // Known chatter gets a seat if missing — identity available.
-    characters.assignCharacter({
+    if (!isDropComment(chat.comment)) return;
+    if (characters.getCharacterByUserId(chat.userId)) {
+      console.log(`[CHAT] @${chat.username} hey (already on floor)`);
+      return;
+    }
+    const character = characters.assignCharacter({
       userId: chat.userId,
       username: chat.username,
     });
+    console.log(`[CHAT] @${chat.username} → HEY drop`);
+    sockets.emitViewerJoin(
+      { userId: chat.userId, username: chat.username },
+      character,
+    );
   });
+}
+
+/** Chat keyword to drop a character from the sky. */
+function isDropComment(comment: string): boolean {
+  const t = comment.trim().toLowerCase().replace(/[!?.…]+$/g, "").trim();
+  return t === "hey";
 }
 
 function diamondFor(giftName: string): number {

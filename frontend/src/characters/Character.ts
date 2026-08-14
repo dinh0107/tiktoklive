@@ -50,14 +50,14 @@ export class Character {
     this.sharedBodyMat = true;
 
     this.sprite = new THREE.Sprite(mat);
-    this.sprite.scale.set(1.7, 2.25, 1);
-    this.sprite.position.y = 1.15;
+    this.sprite.scale.set(1.4, 1.85, 1);
+    this.sprite.position.y = 0.95;
     this.visual.add(this.sprite);
 
     // Nametag on root (not visual) so dance squash/sway doesn't hide it
     if (opts?.showNameTag !== false) {
       this.nameSprite = createNameSprite(data.username, this.accent, false);
-      const yLift = 2.55 + (this.seed % 5) * 0.08;
+      const yLift = 2.15 + (this.seed % 5) * 0.08;
       this.nameSprite.position.set(0, yLift, 0.05);
       this.nameSprite.renderOrder = 20;
       this.root.add(this.nameSprite);
@@ -205,7 +205,7 @@ export class Character {
       this.accent,
       spotlightStyle,
     );
-    const yLift = 2.55 + (this.seed % 5) * 0.08;
+    const yLift = 2.15 + (this.seed % 5) * 0.08;
     this.nameSprite.position.set(0, yLift, 0.05);
     this.nameSprite.renderOrder = 20;
     this.root.add(this.nameSprite);
@@ -401,19 +401,37 @@ export class Character {
 
   playSpawn(): Promise<void> {
     this.killIdle();
-    this.visual.scale.set(0, 0, 0);
+    const groundY = this.data.position.y;
+    this.root.position.y = groundY + 6.5;
+    this.visual.scale.set(1, 1, 1);
+    this.visual.rotation.z = (Math.random() - 0.5) * 0.6;
+
     return new Promise((resolve) => {
-      gsap.to(this.visual.scale, {
-        x: 1,
-        y: 1,
-        z: 1,
-        duration: 0.5,
-        ease: "back.out(2)",
+      const tl = gsap.timeline({
         onComplete: () => {
+          this.animTween = null;
+          this.root.position.y = groundY;
+          this.visual.rotation.z = 0;
           this.startIdle();
           resolve();
         },
       });
+      this.animTween = tl;
+      tl.to(this.root.position, {
+        y: groundY,
+        duration: 0.85,
+        ease: "bounce.out",
+      })
+        .to(
+          this.visual.rotation,
+          { z: 0, duration: 0.85, ease: "power2.out" },
+          0,
+        )
+        .to(
+          this.visual.scale,
+          { x: 1.15, y: 0.85, duration: 0.12, yoyo: true, repeat: 1 },
+          0.7,
+        );
     });
   }
 
@@ -525,7 +543,7 @@ function createNameSprite(
       depthWrite: false,
     }),
   );
-  sprite.scale.set(1.9, 0.48, 1);
+  sprite.scale.set(1.55, 0.4, 1);
   sprite.renderOrder = 20;
   return sprite;
 }

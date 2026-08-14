@@ -71,14 +71,16 @@ export function connectBackend(
   socket.on(
     "character:assign",
     (msg: { character: ServerCharacter }) => {
-      syncCharacter(characters, msg.character);
+      // Snapshot / silent sync — no drop
+      syncCharacter(characters, msg.character, false);
     },
   );
 
   socket.on(
     "viewer:join",
     (msg: { user: { userId: string; username: string }; character: ServerCharacter }) => {
-      syncCharacter(characters, msg.character);
+      // "hey" drop from sky
+      syncCharacter(characters, msg.character, true);
     },
   );
 
@@ -88,7 +90,7 @@ export function connectBackend(
 
   socket.on("gift:received", (msg: GiftReceivedMessage) => {
     console.log("[GIFT] received (socket)");
-    syncCharacter(characters, msg.character);
+    syncCharacter(characters, msg.character, true);
     giftQueue.enqueue({
       ...msg.gift,
       userId: msg.character.userId,
@@ -102,6 +104,7 @@ export function connectBackend(
 export function syncCharacter(
   characters: CharacterManager,
   server: ServerCharacter,
+  dropFromSky = false,
 ): void {
   characters.assignCharacter(
     {
@@ -112,7 +115,7 @@ export function syncCharacter(
     {
       id: server.id,
       position: server.position,
-      spawn: !characters.getCharacterByUserId(server.userId),
+      spawn: dropFromSky && !characters.getCharacterByUserId(server.userId),
     },
   );
 }
