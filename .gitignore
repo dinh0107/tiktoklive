@@ -1,7 +1,9 @@
 node_modules
 .env
 dist
-public
 .DS_Store
 *.log
 .vite
+
+# backend/public is the production FE bundle — commit it for Plesk
+# (Vite cannot build on many Windows shared hosts)

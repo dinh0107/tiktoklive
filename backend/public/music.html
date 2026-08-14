@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meme Bar – Music (OBS)</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0a0812;
+        --card: #161022;
+        --text: #f4efe8;
+        --muted: #9aa3c0;
+        --accent: #ff4fa3;
+        --line: rgba(255, 255, 255, 0.1);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font: 15px/1.45 "Segoe UI", system-ui, sans-serif;
+      }
+      main {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 20px 16px 40px;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: 1.35rem;
+      }
+      .hint {
+        color: var(--muted);
+        margin: 0 0 18px;
+        font-size: 0.92rem;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 14px;
+      }
+      label {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: #0c0a14;
+        color: var(--text);
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      button {
+        border: 0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button.ghost {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--text);
+      }
+      #player {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #000;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      #player iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+      ol {
+        margin: 8px 0 0;
+        padding-left: 1.2rem;
+        color: var(--muted);
+      }
+      code {
+        color: #ffe066;
+        font-size: 0.88em;
+      }
+      .status {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+      .status.ok {
+        color: #7cffb0;
+      }
+      .status.err {
+        color: #ff8a8a;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/music-paBRLMq3.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  </head>
+  <body>
+    <main>
+      <h1>Music cho OBS</h1>
+      <p class="hint">
+        Phát YouTube / SoundCloud trong Browser Source. OBS lấy tiếng livestream;
+        tắt Monitor để <strong>không phát ra loa máy</strong>.
+      </p>
+
+      <section class="card">
+        <label for="url">Link YouTube hoặc SoundCloud</label>
+        <input
+          id="url"
+          type="url"
+          placeholder="https://www.youtube.com/watch?v=… hoặc soundcloud.com/…"
+          autocomplete="off"
+        />
+        <div class="row">
+          <button type="button" id="btn-play">Phát</button>
+          <button type="button" id="btn-clear" class="ghost">Xóa</button>
+        </div>
+        <p id="status" class="status">Chưa có bài.</p>
+      </section>
+
+      <div id="player" aria-live="polite"></div>
+
+      <section class="card">
+        <strong>Cấu hình OBS (quan trọng)</strong>
+        <ol>
+          <li>
+            Thêm <code>Browser Source</code> → URL
+            <code id="self-url">…</code>
+          </li>
+          <li>Width ~800, Height ~450 (có thể kéo source ra ngoài khung hình).</li>
+          <li>
+            <code>Advanced Audio Properties</code> → nguồn Browser này →
+            <strong>Audio Monitoring = Monitor Off</strong>
+            (stream vẫn có tiếng, loa máy im).
+          </li>
+          <li>
+            Đừng mute nguồn này trên mixer. Nếu dùng Desktop Audio, tắt/mute
+            Desktop để khỏi bị đôi tiếng.
+          </li>
+        </ol>
+      </section>
+    </main>
+  </body>
+</html>

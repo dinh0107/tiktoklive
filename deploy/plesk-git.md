@@ -1,116 +1,66 @@
-# Deploy qua Git → Plesk (member.chunmedia.vn)
+# Deploy qua Git → Plesk (`live.chunmedia.vn`)
 
-Repo sẵn có: `https://github.com/dinh0107/tiktoklive.git`
+Repo: `https://github.com/dinh0107/tiktoklive.git`
 
 ```
-máy bạn → git push → GitHub → Plesk Git Pull → build → Node restart
+máy bạn: npm run deploy:build → commit backend/public → push
+Plesk:   Pull → node deploy/after-pull.mjs --server → Restart Node
 ```
 
-## A. Trên máy bạn (một lần / mỗi lần update)
+> **Không build Vite trên Plesk Windows** — esbuild hay lỗi  
+> `Cannot read directory "../../../../..": Access is denied`.
+
+## 1. Máy bạn — mỗi lần đổi code / FE
 
 ```bat
 cd C:\Users\nguye\meme-bar
+npm run deploy:build
 git add -A
-git status
-git commit -m "Add Plesk git deploy"
+git commit -m "Deploy build"
 git push origin main
 ```
 
-(Không commit file `.env` — đã có trong `.gitignore`.)
+`deploy:build` tạo `backend/dist` + `backend/public` (commit cả `public`).
 
-## B. Plesk → gắn Git (một lần)
+## 2. Plesk Git
 
-1. Domains → **member.chunmedia.vn** → **Git**
-2. **Enable Git** / Add repository  
-   - Repository URL: `https://github.com/dinh0107/tiktoklive.git`  
-   - Nếu repo private: Personal Access Token (GitHub)  
-   - Branch: `main`  
-   - Deploy path / Clone to: thư mục app, ví dụ  
-     `C:\Inetpub\vhosts\chunmedia.vn\member.chunmedia.vn\meme-bar`  
-     (hoặc path Plesk hiện sẵn — nhớ path này là **Application root** của Node)
-3. **Additional deploy actions** (chạy sau mỗi Pull) — dán:
+- Domain: **live.chunmedia.vn**
+- Repo: `https://github.com/dinh0107/tiktoklive.git` · branch `main`
+- **Additional deploy actions:**
 
 ```bat
-node deploy/after-pull.mjs
+node deploy/after-pull.mjs --server
 ```
 
-Hoặc nếu Plesk chạy từ thư mục khác:
-
-```bat
-cd meme-bar && node deploy/after-pull.mjs
-```
-
-(điều chỉnh `cd` cho đúng chỗ có `package.json` root + folder `deploy`)
-
-4. Bấm **Pull now** / Deploy lần đầu (sẽ `npm ci` + build — mất vài phút)
-
-## C. Node.js trên cùng domain (một lần)
-
-Domains → **member.chunmedia.vn** → **Node.js**:
+## 3. Plesk Node.js
 
 | Mục | Giá trị |
 |-----|---------|
-| Application root | thư mục clone repo (**có `app.js`**) |
-| **Application startup file** | **`app.js`** |
-| Application mode | `production` |
-| Node.js version | **20** |
+| Application root | `C:\Inetpub\vhosts\chunmedia.vn\live.chunmedia.vn` (có `app.js`) |
+| Application Startup File | `app.js` |
+| Mode | `production` |
+| Node | **20** |
 
-**Custom environment variables (khuyến nghị):**
+**Environment variables:**
 
 ```
-FRONTEND_URL=https://member.chunmedia.vn
+FRONTEND_URL=https://live.chunmedia.vn
 PORT=3000
 TIKTOK_USERNAME=
 ```
 
-`STATIC_DIR` — `app.js` tự trỏ `backend/public` nếu không set.
+(`STATIC_DIR` mặc định trong `app.js` → `backend\public`)
 
-Deploy actions sau Git Pull:
+## 4. Kiểm tra
 
-```bat
-npm ci --omit=dev
-node deploy/after-pull.mjs
-```
+- https://live.chunmedia.vn/api/health  
+- https://live.chunmedia.vn/overlay  
+- https://live.chunmedia.vn/dashboard  
 
-(`npm ci` ở root cài `dotenv` cho `app.js`; `after-pull` build FE/BE.)
+## Lỗi
 
-## D. Tạo `.env` trên server (một lần, không qua Git)
-
-File Manager → `meme-bar/backend/.env`:
-
-```env
-PORT=3000
-FRONTEND_URL=https://member.chunmedia.vn
-STATIC_DIR=./public
-```
-
-**Nếu** Application root = repo root và `STATIC_DIR=./backend/public`, ghi đúng path đó trong env Plesk (ưu tiên Custom env vars của Node.js hơn file `.env` nếu dotenv không load từ sai cwd).
-
-`dotenv` load từ `process.cwd()`. Để chắc: điền biến trong **Plesk Node.js → Custom environment variables**, không phụ thuộc `.env`.
-
-## E. Mỗi lần sửa code
-
-```bat
-git add -A
-git commit -m "mô tả thay đổi"
-git push origin main
-```
-
-Plesk: **Git → Pull updates** (hoặc bật auto deploy).  
-Chờ deploy actions xong → **Node.js → Restart**.
-
-## F. Kiểm tra
-
-- https://member.chunmedia.vn/api/health  
-- https://member.chunmedia.vn/overlay  
-- https://member.chunmedia.vn/dashboard  
-
-## Lỗi thường gặp
-
-| Lỗi | Fix |
-|-----|-----|
-| `npm` not found in deploy actions | Trong Plesk Node bật Node, hoặc dùng full path `C:\Program Files\nodejs\npm.cmd` |
-| Pull OK nhưng site cũ | Restart Node app |
-| `STATIC_DIR` 404 overlay | Sai path `public` — xem mục C |
-| Git private 401 | GitHub token trong Plesk Git |
-| Build OOM | Host tăng RAM / build trên máy rồi commit `backend/public` (không khuyến nghị) |
+| Lỗi | Cách xử |
+|-----|---------|
+| Vite Access denied trên server | Đúng — dùng `--server` + commit `backend/public` |
+| `backend/public empty` | Chạy `npm run deploy:build` trên PC rồi push |
+| npm ci thiếu lock | Đã có `package-lock.json` ở root — Pull lại |
