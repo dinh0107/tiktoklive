@@ -19,8 +19,20 @@ function parseOrigins(raw: string): string | string[] | boolean {
   return v;
 }
 
+/**
+ * iisnode on Windows often sets PORT to a named pipe (\\.\pipe\...),
+ * not a TCP port number — pass it through as string.
+ */
+function resolveListenPort(): string | number {
+  const raw = process.env.PORT;
+  if (raw === undefined || raw === "") return 3000;
+  const n = Number(raw);
+  if (Number.isInteger(n) && n >= 0 && n < 65536) return n;
+  return raw;
+}
+
 export const env = {
-  port: Number(process.env.PORT ?? 3000),
+  port: resolveListenPort(),
   tiktokUsername: (process.env.TIKTOK_USERNAME ?? "").replace(/^@/, ""),
   /** Public site URL(s) for CORS — e.g. https://meme.example.com */
   frontendUrl: required("FRONTEND_URL", "http://localhost:5173"),

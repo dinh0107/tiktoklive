@@ -5,7 +5,7 @@ async function main(): Promise<void> {
   const { httpServer, tiktok, sockets } = await createApp();
 
   httpServer.listen(env.port, () => {
-    console.log(`[SERVER] http://localhost:${env.port}`);
+    console.log(`[SERVER] listening on ${String(env.port)}`);
     console.log(`[SERVER] FRONTEND_URL=${env.frontendUrl}`);
   });
 

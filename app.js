@@ -29,8 +29,10 @@ process.env.STATIC_DIR =
 process.env.FRONTEND_URL =
   process.env.FRONTEND_URL || "https://live.chunmedia.vn";
 
-// iisnode injects PORT — keep whatever Plesk sets
-if (!process.env.PORT) {
+// Do NOT overwrite PORT — iisnode sets a named pipe here.
+if (process.env.PORT) {
+  console.log("[plesk] PORT=" + process.env.PORT);
+} else {
   process.env.PORT = "3000";
 }
 
